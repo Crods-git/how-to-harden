@@ -3,15 +3,20 @@ layout: guide
 title: "Ona Hardening Guide"
 vendor: "Ona"
 slug: "ona"
+platform: "OpenAI"
+platform_slug: "openai"
+product: "Ona"
 tier: "2"
 category: "AI/ML Platform"
 description: "Security hardening for Ona (formerly Gitpod) — the cloud platform for autonomous AI software-engineering agents: SSO/SCIM identity, agent guardrails (Veto, command deny list, MCP), environment and network policy, secrets, self-hosted runners, and audit logging."
-version: "0.2.1"
+version: "0.2.2"
 maturity: ["ai-drafted", "ai-validated"]
-last_updated: "2026-08-20"
+last_updated: "2026-10-10"
 ---
 
 ## Overview
+
+This is a **product guide within the [OpenAI platform](/guides/chatgpt-enterprise/)**. OpenAI announced its acquisition of Ona on June 11, 2026 ([OpenAI to acquire Ona](https://openai.com/index/openai-to-acquire-ona/)), and Ona reports that the transaction closed on August 10, 2026 ([Ona joins OpenAI](https://ona.com/stories/ona-joins-openai)). Ona is still administered in its own console (`app.gitpod.io`), under its own SSO, SCIM and contract (Gitpod GmbH), so the ChatGPT workspace controls in the OpenAI **Common Controls** hub, the [ChatGPT Enterprise guide](/guides/chatgpt-enterprise/), do not configure it: every control an Ona administrator needs is in this guide. New customer sign-up is closed. Existing customers, new members of existing organizations and Enterprise deployments on AWS or GCP continue, and new users are pointed to OpenAI's Codex ([Ona quickstart](https://ona.com/docs/ona/quickstart)).
 
 Ona (formerly Gitpod) runs autonomous AI software-engineering agents in cloud development environments with access to source code, credentials, package registries, and outbound network. That capability profile makes it a first-class security surface: an over-permissioned agent, a poisoned dev environment, or a leaked scoped credential can read or exfiltrate an entire codebase, and the platform's own history of session/origin/token-boundary vulnerabilities (five Gitpod-era CVEs, one critical workspace-takeover) shows the blast radius is real.
 
@@ -1239,6 +1244,7 @@ Source: [NVD keyword search "gitpod"](https://services.nvd.nist.gov/rest/json/cv
 
 | Date | Version | Maturity | Changes | Author |
 |------|---------|----------|---------|--------|
+| 2026-10-10 | 0.2.2 | ai-drafted · ai-validated | Became a product guide in the OpenAI platform (`platform: "OpenAI"`, `product: "Ona"`) after OpenAI's acquisition closed on 2026-08-10, with a pointer that states Ona is still administered in its own console and does not inherit the hub's ChatGPT controls; notes that new customer sign-up is closed. No control changed, so the status set is unchanged | Claude Code (Opus 5.5) |
 | 2026-08-20 | 0.2.1 | ai-drafted · ai-validated | Added **ai-validated** to this guide's status set, which now reads **ai-drafted** + **ai-validated** — an AI agent exercised this guidance against a live Ona tenant and the guidance survived that contact; no human practitioner has reviewed or applied it, so the guide claims no **ni-** status, and an AI status never substitutes for one. **What was exercised:** all 22 controls walked on the live console (`app.gitpod.io`, a `free_ona` tenant) and 18 read-only `api/` audit packs executed against that tenant, exit codes and sanitized output captured per pack; the OCEAN `ona` source observed live against the same organization. 18 controls carry a per-requirement badge naming what was run for that control. **What was NOT exercised — the badges are absent on purpose:** every `terraform/` pack was only `terraform validate`d inside Docker and was never applied to any organization, so no Terraform path in this guide has been proven to run; the four `cli/` packs were never executed (the `ona` CLI was not installed on the run host); the three mutating packs (`api` 1.01 and 1.05, `cli` 2.01) were deliberately not run, so 1.1 and 1.5 rest on console observation alone; 2.5 and 6.2 are plan-gated to Core+/Enterprise on this tenant and 6.1 has no console surface at all with its API pack returning the Enterprise gate, so all three are unbadged; 2.1 came back PARTIAL because its executables section is Enterprise-gated, so it too is unbadged even though its audit pack ran. Enterprise-gated toggle behaviour throughout remains a documentation claim, not a live one. No control text, control number, or heading changed. | Claude Code (Opus 5) |
 | 2026-08-19 | 0.2.0 | ai-drafted | Live validation pass (validate-hth-guide): every console path re-read off the live console (`app.gitpod.io`; sidebar Organization / Infrastructure / Agents / Login & Identity) — 11 controls needed path corrections (1.2, 1.5, 2.3, 2.6, 3.1–3.4, 4.1, 4.3 wrong; 2.1 partial — its executables section is plan-gated on the tenant walked); 14 doc-drift corrections (`set-default` takes a policy id, MCP toggle lives under Agents → Policies, WatchEvents is not the audit trail, API base `app.gitpod.io`, LLM-provider posture, `ona idp token`, webhook direction, deprecated `OWNER_ONLY`, preview gating for automation limits and Veto audit entries, service-account "no expiry" wording); Code Packs landed for the first time — api (read-only audit scripts, executed against a live tenant), terraform (`gitpod-io/ona`), cli (`ona`), config (Veto policy YAML, MCP `toolDenyList`), and Sigma rules on the audit-log schema; controls with no write surface now carry an explicit Automation verdict (2.5, 3.5); Ona added to the CLI inventory. | Claude Code (Opus 5) † |
 | 2026-08-08 | 0.1.0 | ai-drafted | Initial guide — 20 controls across identity, agent guardrails (Veto/command-deny/MCP), environment & network policy, secrets, self-hosted runners, and audit logging. Authored per the create-hth-guide playbook: every control traces to fetched Ona documentation; no product benchmark exists so mappings use NIST 800-53/AI RMF/SOC 2 catalogs; the Gitpod-era CVE history grounds the rationale. Automation surfaces stated honestly (Security Policy API/CLI for ports+executables, EventService for audit) — Code Packs deferred to a follow-up. Unverified "Ona joining OpenAI" claim deliberately excluded. | Claude Code (Opus 4.8) † |

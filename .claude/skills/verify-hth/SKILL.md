@@ -13,7 +13,7 @@ Seven checks, each with a command and an explicit pass condition. ALL must pass 
 bash scripts/validate-guides.sh
 ```
 
-**Pass:** output ends `ALL TESTS PASSED`. Covers pack-YAML validity, code-block languages, table separators, table blank lines, unescaped Liquid, valid categories, maturity sets (Test 5b — list form, the six status names, and the rule that a `*-reviewed`/`*-validated` claim rests on a `*-drafted` one), required frontmatter, required structural sections.
+**Pass:** output ends `ALL TESTS PASSED`. Covers pack-YAML validity, code-block languages, table separators, table blank lines, unescaped Liquid, valid categories, maturity sets (Test 5b — list form, the six status names, and the rule that a `*-reviewed`/`*-validated` claim rests on a `*-drafted` one), platform integrity (Test 5c — platform fields set together, one `Common Controls` hub and one name per platform, hub and product guides linking each other, and no company left with two homepage cards), required frontmatter, required structural sections.
 **On fail:** the failing test names the file/line. Unescaped Liquid → wrap the literal `{{...}}` in `{% raw %}...{% endraw %}`.
 
 ## Check 2 — Zero inline fences in guides

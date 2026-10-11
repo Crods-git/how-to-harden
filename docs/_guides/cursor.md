@@ -1,14 +1,17 @@
 ---
 layout: guide
 title: "Cursor Hardening Guide"
-vendor: "Anysphere"
+vendor: "SpaceXAI"
 slug: "cursor"
+platform: "SpaceXAI"
+platform_slug: "spacexai"
+product: "Common Controls"
 tier: "1"
 category: "DevOps"
 description: "AI code editor security hardening for code privacy, MCP security, agent sandboxing, API key management, and workspace trust"
-version: "0.5.1"
+version: "0.5.2"
 maturity: ["ai-drafted"]
-last_updated: "2026-10-04"
+last_updated: "2026-10-10"
 ---
 
 
@@ -23,6 +26,8 @@ Cursor is an AI-powered code editor built on VSCode that integrates large langua
 The threat landscape for AI code editors evolved rapidly in 2025-2026. Seven CVEs were assigned to Cursor in 2025 alone—including remote code execution via MCP prompt injection (CurXecute), persistent team-wide compromise through poisoned MCP configurations (MCPoison), sandbox escapes via shell builtins (NomShub), and case-sensitivity bypasses enabling sensitive file overwrites. A malicious extension on the Open VSX registry led to a confirmed $500,000 cryptocurrency theft. Security researchers demonstrated that invisible Unicode characters in `.cursorrules` files can weaponize AI code generation across entire teams.
 
 This guide provides comprehensive hardening controls informed by vendor documentation, CVE analysis, security researcher disclosures, and industry frameworks including the OWASP Top 10 for LLM Applications (2025), the OWASP Top 10 for Agentic Applications (2026), NIST AI RMF, NIST SP 800-218A, and MITRE ATLAS v5.
+
+This guide is the **Common Controls hub of the SpaceXAI platform**. Cursor's maker, Anysphere, Inc., became a wholly owned subsidiary of SpaceX on August 14, 2026 ([Cursor is now a part of SpaceX](https://cursor.com/blog/joining-spacex)), and SpaceX's AI business publishes under the SpaceXAI brand, whose own site says Cursor "became part of SpaceXAI on August 14" ([x.ai](https://x.ai/news/grok-bot-customer-support)). Cursor keeps its own brand, plans and terms, still contracted through Anysphere, Inc. The Cursor team controls in this guide (SSO, SCIM, Privacy Mode, MCP allowlists, Cloud Agent settings, network allowlisting, audit-log export and spend controls) are also the org-wide controls that Grok Bot, SpaceXAI's computer-use agent, inherits when it runs on a Cursor team. Product-specific controls live in product guides, listed in [Products in This Platform](#products-in-this-platform).
 
 ### Intended Audience
 - Security engineers evaluating AI coding tools
@@ -64,6 +69,19 @@ This guide covers Cursor-specific security configurations including AI privacy s
 9. [Network & Telemetry Controls](#9-network--telemetry-controls)
 10. [Monitoring & Audit Logging](#10-monitoring--audit-logging)
 11. [Organization & Team Controls](#11-organization--team-controls)
+
+**Product guides:** [Grok Bot](/guides/grok-bot/)
+
+---
+
+## Products in This Platform
+
+SpaceXAI is a multi-product platform. This guide is the **Common Controls hub**, holding the Cursor team-wide controls. Product-specific controls live in their own guides:
+
+| Product | Guide | Covers |
+|---------|-------|--------|
+| **Common Controls** (this guide) | — | Cursor team SSO and SCIM, Privacy Mode and model governance, API-key handling and spend, MCP allowlists and tool protection, agent auto-run, sandbox and Cloud Agent posture, rules-file and workspace trust, extensions, network allowlisting and telemetry, usage and audit logging, Teams/Enterprise policy, MDM and hooks |
+| **Grok Bot** | [Grok Bot guide](/guides/grok-bot/) | Group-scoped Grok Bot access, connector and egress limits, enforced Auto-review, Team Bot governance, action recording, and the lifecycle of each member's hosted computer |
 
 ---
 
@@ -2011,6 +2029,7 @@ Plan names and tiers follow [cursor.com/pricing](https://cursor.com/pricing) and
 
 | Date | Version | Maturity | Changes | Author |
 |------|---------|----------|---------|--------|
+| 2026-10-10 | 0.5.2 | ai-drafted | Became the Common Controls hub of the new SpaceXAI multi-product platform (`platform: "SpaceXAI"`, `platform_slug: "spacexai"`, `product: "Common Controls"`, vendor `SpaceXAI`) after SpaceX completed its acquisition of Anysphere on 2026-08-14. Overview names the company chain with first-party citations; added the Products in This Platform table and a Grok Bot product-guide link. No control changed or was renumbered | Claude Code (Opus 5.5) |
 | 2026-10-04 | 0.5.1 | ai-drafted | validate-hth-guide live run against a signed-in Free (Hobby) account on the cursor.com dashboard; 0 surfaces VERIFIED-LIVE (Cursor app not installed, no Teams/Enterprise team or Admin API key), so maturity is unchanged. Corrected from the live dashboard: 1.2 rewritten — `cursor.com/settings/security` is a 404 and Cursor has no account MFA setting, so MFA is enforced at the Google/GitHub sign-in or the SSO IdP; 2.1 adds the web path Dashboard → Settings → Privacy → Privacy Mode, replaces the "volatile memory… discarded" bullet with the dashboard's own "Code may be stored for Cloud Agent, Team Rules, and other features", and documents the per-account Restricted and Early-Access Models acknowledgement; 1.1 notes the signed-in redirect to the dashboard; 9.2 gains its missing ClickOps section. Code: 4.2 and 5.1 packs now exit 2 (not assessed) instead of passing when no `permissions.json` exists | Claude Code (Opus 5.5) |
 | 2026-09-25 | 0.5.0 | ai-drafted | validate-hth-guide Phase 5 fix pass plus its independent-audit response (no live surface verified — Hobby account behind a sign-in wall, Cursor app not installed — so maturity is unchanged). Corrected against current vendor docs: 1.1 sign-in methods are email magic link, Google, or GitHub (not email/password); 1.3 SSO is Teams and Enterprise, dashboard path, and domain verification is the enforcement (no toggle); 1.4 SCIM wizard path and roles; 2.1 provider list, Privacy Mode wording, Enterprise default, team path; 2.2 router availability and defaults, Model Access Control, Impose Auto; 2.3 `.cursorignore` does not cover terminal/MCP tools, hierarchical/global ignore, removed `.cursorindexingignore`; 2.4 requests still transit Cursor's backend; 3.2/3.3 Anthropic console moved to platform.claude.com; 4.1 MCP Configuration path; 4.2 MCP follows Run Modes, file protections; 5.1 Auto-review default since 3.6; 5.2 documented sandbox and `sandbox.json`; 5.3 Cloud Agents never prompt; 10.1 audit log always on (Enterprise), streaming on request, stale caveat replaced; 11.2 Linux `policy.json`, no Privacy Mode policy; 11.3 `failClosed`; Appendix A rebuilt on Hobby/Individual/Teams/Enterprise; CVE-2025-64106 citation replaced with the vendor advisory. Code: new api/ packs (1.4, 2.1, 2.2, 3.3, 10.1, 11.1) on the Cursor Admin API, new config/ packs (4.2, 5.2, 7.2, 10.2, 11.2, 11.3); fixed fail-open or destructive packs (2.3 overwrite, 3.1 placeholder append, 3.2 key clobber, 4.1 secret printing, 6.1 BSD-grep fail-open, 8.1/10.1 exit 0 on no data); every api/ pack now exits 2 on an HTTP 200 whose body lacks the documented response shape (and 1.4, 3.3, 11.1 on zero members) instead of passing on nothing, and 8.1 no longer trusts a `cursor` CLI that fails; removed undocumented settings keys (2.1, 5.1, 9.1, 9.2); every pack carries an HTH Pack Contract v1 header; `**Automation:**` verdicts added to 1.1, 1.2, 1.3, 2.4, 5.3 | Claude Code (Opus 5.5) |
 | 2026-08-08 | 0.4.0 | ai-drafted | Add 11.3 Cursor Hooks as an enforcement layer (event classes, Enterprise→Team→Project→User precedence, per-platform config paths, fail-open default, ~30 min dashboard sync). Rewrite 2.2 around Cursor Router model governance (on by default for Teams; routed model hidden by default; mode restrictions; soft/hard enforcement). Add US-only data residency and restricted-model retention approvals to 2.1. Replace the 9.2 endpoint table with Cursor's documented hosts, add `*.cursorvm.com` cloud-agent VMs, and remove `*.cursor.com` and `marketplace.visualstudio.com` (not in the vendor list). Correct exact identifiers in 1.4, 7.1, 8.1, 11.2 (`cursorAuth.allowedTeamId`/`AllowedTeamId`, `extensions.allowed`/`AllowedExtensions` with MDM override and 2.1+ version floor, `security.workspace.trust.enabled`/`WorkspaceTrustEnabled`, three roles, SCIM requires Enterprise with SSO). Reframe 4.2, 5.1, and 5.2 around the current approval-tier model and quote the vendor's "best-effort guardrails rather than a hard security boundary" caveat. Soften 5.2 sandbox internals and 10.1 audit-log specifics — both source URLs now 404, annotated rather than asserted. Add missing **Attack Prevented** to 2.2, 2.4, 4.2, 5.2, 6.2, 9.1, 10.1, 10.2, 11.1, 11.2, 11.3. Remove Trust Center and `/security` marketing references | Claude Code (Opus 4.8) |

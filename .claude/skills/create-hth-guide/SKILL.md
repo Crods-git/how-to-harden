@@ -1,11 +1,30 @@
 ---
 name: create-hth-guide
-description: Create a new How to Harden vendor guide (or a product guide inside a multi-product platform) through a prescriptive research-first process that produces a complete cheat sheet and passes the verification battery. USE WHEN creating a new guide, authoring a vendor hardening guide, adding a product guide to a platform (like Gmail under Google Workspace), or converting a placeholder/stub guide into a real one. NOT FOR updating existing guide content (use update-hth-guide) or authoring pack code (use create-code-pack).
+description: Create a new How to Harden vendor guide (or a product guide inside a multi-product platform) through a prescriptive research-first process that produces a complete cheat sheet and passes the verification battery. USE WHEN creating a new guide, authoring a vendor hardening guide, adding a product guide to a platform (like Gmail under Google Workspace), checking which company and platform a product belongs to, or converting a placeholder/stub guide into a real one. NOT FOR updating existing guide content (use update-hth-guide) or authoring pack code (use create-code-pack).
 ---
 
 # Create an HTH Guide
 
 A step-by-step process any agent or human can follow to produce `docs/_guides/{slug}.md`. Companion standards: [SOURCES.md](../../../SOURCES.md) (what counts as a source), [AGENTS.md](../../../AGENTS.md) (formatting rules), [templates/vendor-guide-template.md](../../../templates/vendor-guide-template.md) (structure).
+
+## Phase 0 — Place the guide: company → platform → product
+
+Know where the guide will live before researching what goes in it. Every guide sits on a three-level chain ([AGENTS.md](../../../AGENTS.md#company--platform--product-placing-a-guide-in-a-multi-product-platform)): the **company** that owns the product, the **platform** card the homepage groups it under, and the **product** this guide hardens. Skipping this is how the site showed two OpenAI cards, and how Cursor stayed filed under "Anysphere" for two months after SpaceX bought its maker.
+
+1. **Name the owner from a source fetched in this run:** the product's own about, legal or terms pages and newsroom, the acquirer's announcement, or a regulator filing ([SOURCES.md](../../../SOURCES.md) Verification Rule 5). Training data is the least reliable source here: an ownership change after a model's cutoff is the normal case, not the edge case.
+2. **Check the last ~24 months for a change of control:** acquisitions, mergers, rebrands, spin-outs, and the parent changing its own brand (xAI became SpaceXAI). Record each as announced or closed, with its date. An announced deal does not move the guide yet; the Overview says it is pending.
+3. **Look the owner up in the corpus** under its current and former names and the names of its other products:
+   - `rg -l '^platform: "{Owner}"' docs/_guides/` finds an existing platform
+   - `rg -il '^vendor: .*{Owner}' docs/_guides/` finds standalone guides by the same company
+4. **Decide the placement** and write it down as one line, `{Company} → {Platform, or standalone} → {Product}`, with its source URL:
+
+   | What step 3 found | Placement |
+   |---|---|
+   | The owner has a platform | A product guide in that platform (Phase 3 step 3) |
+   | The owner has a standalone guide but no platform | A new platform. The existing guide that already holds the org-wide admin plane becomes the hub, with no control renumbered, and this guide joins it as a product. Converting an existing guide is a restructure, so the request must cover it or a maintainer must confirm it |
+   | The owner has nothing else in the corpus | A standalone guide; name the owner in the Overview when it differs from the brand |
+
+5. **A shared owner is not a shared control plane.** A product that keeps its own console, identity and contract (Ona under OpenAI) still joins its owner's platform, but its pointer and the hub's Products row both say the hub's controls do not configure it. Never imply an inheritance the product does not have.
 
 ## Phase 1 — Source collection (do this before writing anything)
 
@@ -44,7 +63,7 @@ A step-by-step process any agent or human can follow to produce `docs/_guides/{s
 2. Fill frontmatter: `layout: guide`, `title`, `vendor`, `slug`, `tier`, `category` (must be in `scripts/validate-guides.sh` VALID_CATS), `description`, `version: "0.1.0"`, `maturity: ["ai-drafted"]`, `last_updated` (will be re-stamped at commit).
 
    **`maturity` is a LIST and a new guide holds exactly `["ai-drafted"]`.** Maturity is a matrix, not a ladder: three stages (`drafted` → `reviewed` → `validated`) × two agents (`ai` = a machine, `ni` = natural intelligence, i.e. a person), six statuses that combine rather than replace each other ([VERSIONS.md](../../../VERSIONS.md#maturity-statuses--the-matrix) defines each one). A guide this skill produces was written by a machine from documentation and has touched no tenant, which is exactly and only what `ai-drafted` asserts — however thorough the research was. Never write it as a scalar (`maturity: "ai-drafted"` fails Test 5b), never add a second status, and never write `ni-drafted` for a guide you wrote: that status belongs to a human author. Only a [`validate-hth-guide`](../validate-hth-guide/SKILL.md) run may add `ai-validated`, and only maintainers may add any `ni-*`. Do not add per-surface `status-mark.html` marks either: there is nothing yet to evidence them with.
-3. **If this is a product guide in a multi-product platform**, add: `platform: "Platform Name"`, `platform_slug: "{platform-slug}"`, `product: "Product Name"`. The hub guide uses `product: "Common Controls"` and holds ONLY org-wide controls; product guides open with a one-line pointer to the hub and cross-reference instead of duplicating. Reference pairs: google-workspace + gmail; anthropic-claude + claude-code.
+3. **If Phase 0 placed this guide in a platform**, add `platform` and `platform_slug` copied exactly from the hub, plus `product: "Product Name"`, and set `vendor` to the product name. The hub guide uses `product: "Common Controls"` and holds ONLY org-wide controls; product guides open with a one-line pointer to the hub and cross-reference instead of duplicating. Then update the hub: add the product to its "Products in This Platform" table (and its "**Product guides:**" line, if it has one). Reference pairs: google-workspace + gmail; anthropic-claude + claude-code; chatgpt-enterprise + ona (a product with its own console).
 4. Write Overview / Intended Audience / How to Use / Scope, then a linked Table of Contents.
 
 ## Phase 4 — Author each control
@@ -73,7 +92,8 @@ Sections that are NOT controls (reference tables, `### N.N.N` implementation wal
 1. Add the vendor to `docs/_data/doc_links.yml`: `product_docs`, `api_docs` (if real), `hardening_docs` per the SOURCES.md standard (literal hardening docs or omit; multi-source = list of `{label, url}`).
 2. Compliance Quick Reference section + Appendices (edition table, references) + Changelog + Contributing per the template. Add the guide's row to the `VERSIONS.md` registry — regenerate from frontmatter rather than hand-typing one row.
 3. Re-stamp `last_updated` and the changelog date to `date +%F`.
-4. **Run the `verify-hth` skill.** Do not commit without it.
+4. If the guide joined or formed a platform: name it under its company in README's category table, bump the hub's version with its own changelog row, and regenerate both VERSIONS.md rows.
+5. **Run the `verify-hth` skill.** Do not commit without it. Its `validate-guides.sh` Test 5c fails a platform with no hub or two, a hub and product guide that do not link each other, and a company that would get two homepage cards.
 
 ## Gotchas
 
@@ -84,4 +104,6 @@ Sections that are NOT controls (reference tables, `### N.N.N` implementation wal
 - SPAs can return HTTP 200 for nonexistent pages — confirm real content rendered, not a shell.
 - When vendor and benchmark disagree on strictness (SPF `~all` vs SCuBA `-all`), document BOTH with a callout — never silently pick one (SOURCES.md conflict rules).
 - A finished-feeling guide is still only `ai-drafted`. The status tracks who did what, not effort or polish — a machine wrote it from documents and nothing else has happened, which is the whole claim. Adding anything here would assert an act (a live run, a human reading it) that has not occurred.
+- A brand is not an owner. Cursor's site says "Cursor" and its terms say Anysphere, Inc., while SpaceX's 8-K says Anysphere is a SpaceX subsidiary. The guide is placed by the owner.
+- Announced is not acquired. OpenAI announced Ona on 2026-06-11 and Ona reported the close on 2026-08-10; between those dates the honest sentence was "OpenAI has agreed to acquire Ona".
 - On Windows, repo scripts run through Git Bash (`bash scripts/...`).

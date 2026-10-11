@@ -36,12 +36,12 @@ Like CIS Benchmarks, but free, vendor-neutral, and focused on integration contro
 | Productivity | 25 | Slack, Airtable, Asana, Notion |
 | Security | 21 | CrowdStrike, Snyk, Wiz, Zscaler |
 | Data | 17 | Snowflake, Databricks, MongoDB Atlas |
-| DevOps | 17 | GitHub, GitLab, Jenkins, Buildkite |
+| DevOps | 17 | GitHub, GitLab, Jenkins, Buildkite, SpaceXAI (Cursor) |
 | Identity | 13 | Okta, Auth0, Microsoft Entra ID, Duo |
 | HR/Finance | 11 | BambooHR, ADP, Workday, Stripe |
-| AI/ML Platform | 11 | Anthropic (Claude Enterprise, Claude Code, API), OpenAI (ChatGPT Enterprise, ChatGPT Dots), Grok Bot, Ona, LangChain |
+| AI/ML Platform | 11 | Anthropic (Claude Enterprise, Claude Code, API), OpenAI (ChatGPT Enterprise, ChatGPT Dots, Ona), SpaceXAI (Grok Bot), LangChain |
 | Marketing | 9 | HubSpot, Braze, SendGrid, Twilio |
-| IT Operations | 6 | ServiceNow, Jamf, PagerDuty, Windows 11 |
+| IT Operations | 6 | ServiceNow, Jamf, PagerDuty, Microsoft (Intune, Windows 11) |
 | IaC | 2 | Terraform Cloud, Pulumi |
 
 Every control includes:
@@ -176,8 +176,8 @@ The five playbooks under `.claude/skills/` are prescriptive, step-by-step proces
 
 | Playbook | Use it when |
 |----------|-------------|
-| [`create-hth-guide`](.claude/skills/create-hth-guide/SKILL.md) | Writing a new vendor/product guide, breaking a platform into product guides, de-stubbing a placeholder |
-| [`update-hth-guide`](.claude/skills/update-hth-guide/SKILL.md) | Refreshing a guide with current guidance, fixing an inaccuracy, adding a control |
+| [`create-hth-guide`](.claude/skills/create-hth-guide/SKILL.md) | Writing a new vendor/product guide, placing it on the company → platform → product chain, breaking a platform into product guides, de-stubbing a placeholder |
+| [`update-hth-guide`](.claude/skills/update-hth-guide/SKILL.md) | Refreshing a guide with current guidance, fixing an inaccuracy, adding a control, re-homing a guide whose product changed owner |
 | [`create-code-pack`](.claude/skills/create-code-pack/SKILL.md) | Adding or fixing any Code Pack, wiring pack includes |
 | [`verify-hth`](.claude/skills/verify-hth/SKILL.md) | The pass/fail verification battery — run before every commit |
 | [`validate-hth-guide`](.claude/skills/validate-hth-guide/SKILL.md) | Proving ClickOps steps, Code Packs, and OCEAN scanning actually work — and iterating until they do |
