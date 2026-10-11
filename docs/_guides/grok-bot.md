@@ -1,14 +1,17 @@
 ---
 layout: guide
 title: "Grok Bot Hardening Guide"
-vendor: "xAI (SpaceXAI)"
+vendor: "Grok Bot"
 slug: "grok-bot"
+platform: "SpaceXAI"
+platform_slug: "spacexai"
+product: "Grok Bot"
 tier: "1"
 category: "AI/ML Platform"
-description: "AI agent hardening for xAI Grok Bot: group-scoped access, connector and egress limits, enforced Auto-review, Team Bot governance, action recording, and hosted-computer lifecycle"
-version: "0.1.0"
+description: "AI agent hardening for SpaceXAI's Grok Bot: group-scoped access, connector and egress limits, enforced Auto-review, Team Bot governance, action recording, and hosted-computer lifecycle"
+version: "0.1.1"
 maturity: ["ai-drafted"]
-last_updated: "2026-10-09"
+last_updated: "2026-10-10"
 ---
 
 
@@ -18,7 +21,7 @@ last_updated: "2026-10-09"
 
 ## Overview
 
-Grok Bot inherits the Cursor team's org-wide controls, which live in the [Cursor Hardening Guide](/guides/cursor/) and are not repeated here. Those inherited controls are:
+This is a **product guide within the [SpaceXAI platform](/guides/cursor/)**. Grok Bot inherits the Cursor team's org-wide controls, which live in the SpaceXAI **Common Controls** hub, the [Cursor Hardening Guide](/guides/cursor/), and are not repeated here. Those inherited controls are:
 
 - SSO ([cursor 1.3](/guides/cursor/#13-configure-sso-with-samloidc-teams-and-enterprise))
 - SCIM ([cursor 1.4](/guides/cursor/#14-enable-scim-provisioning-enterprise))
@@ -31,7 +34,7 @@ Grok Bot inherits the Cursor team's org-wide controls, which live in the [Cursor
 
 Privacy Mode (Legacy) blocks Grok Bot entirely. The cursor 10.1 pack already pulls every audit event; control 6.2 here covers only the Grok Bot event set.
 
-**What Grok Bot is.** In xAI's words, "Grok Bot is a computer-use agent that operates applications, browsers, and development environments. It runs in Cursor's cloud, and each user's work executes on a dedicated cloud computer. The desktop and mobile apps are thin clients for chat, review, and approvals" ([Grok Bot for teams and enterprises](https://docs.x.ai/grok-bot/teams-and-enterprises)).
+**What Grok Bot is.** In SpaceXAI's words, "Grok Bot is a computer-use agent that operates applications, browsers, and development environments. It runs in Cursor's cloud, and each user's work executes on a dedicated cloud computer. The desktop and mobile apps are thin clients for chat, review, and approvals" ([Grok Bot for teams and enterprises](https://docs.x.ai/grok-bot/teams-and-enterprises)).
 
 - **One computer per user:** each user gets one persistent computer, a dedicated Firecracker microVM. Every Bot that user runs shares it, including its files, signed-in browser sessions and command-line credentials
 - **Reach:** Bots reach company systems through connectors, which appear as plugins and use the member's accounts
@@ -48,12 +51,12 @@ Privacy Mode (Legacy) blocks Grok Bot entirely. The cursor 10.1 pack already pul
 
 The two August posts disagree about which plans were included at launch. Treat Cursor's [plans page](https://cursor.com/help/grok-bot/plans) as the canonical matrix, except where section 8.6 records that it disagrees with Cursor's other pages. The current documentation pages, the Admin API's Grok Bot section and the Organization API's computer operations carry no beta or GA label.
 
-**Who administers it.** Grok Bot is an xAI (SpaceXAI) product that runs in Cursor's cloud on Cursor accounts.
+**Who administers it.** Grok Bot is a SpaceXAI product that runs in Cursor's cloud on Cursor accounts. SpaceXAI is the brand of xAI, which SpaceX acquired on February 2, 2026 ([SpaceX Form 10-Q](https://www.sec.gov/Archives/edgar/data/1181412/000162828026052535/spcx-20260630.htm)). This guide keeps the name xAI where it names docs.x.ai, the xAI API and SDK, and xAI-era sources.
 
 - **Cursor holds the product settings:** every Grok Bot product setting lives in the Cursor dashboard, the Cursor Admin API and the Cursor Organization API. docs.x.ai mirrors the Grok Bot pages and links back to the Cursor dashboard
 - **Three levers live elsewhere:** Grok Business seat assignment in console.x.ai (1.3), the IdP rules (1.2) and Google Workspace app approval (2.2). Cursor's own teams page says the same: "A few live in Team Settings, your Team Marketplace, or your identity provider" ([Cursor: Grok Bot for teams](https://cursor.com/docs/grok-bot/teams))
 
-This guide calls the Cursor side "Cursor (the Grok Bot admin plane)". It is a standalone guide, not a product guide under a platform hub: the Cursor guide covers a different vendor (Anysphere), so this guide cross-references it instead of restructuring it. Grok chat on grok.com and the `@grok` chatbot on X are different products and out of scope.
+This guide calls the Cursor side "Cursor (the Grok Bot admin plane)". Cursor's maker, Anysphere, Inc., became a SpaceX subsidiary on August 14, 2026 ([Cursor is now a part of SpaceX](https://cursor.com/blog/joining-spacex)), so this guide is a product guide in the SpaceXAI platform and the Cursor guide is that platform's Common Controls hub. Grok chat on grok.com and the `@grok` chatbot on X are different products and out of scope.
 
 **How this guide was produced.** This guide is **AI-drafted** from vendor documentation fetched on 2026-10-08, with corrections re-checked against the vendor pages on 2026-10-09. No Cursor dashboard, Grok Bot app or tenant was observed, and nothing here has been applied, validated or reviewed by a person.
 
@@ -2391,6 +2394,7 @@ Grok Enterprise has no documented Grok Bot controls; access goes through the acc
 
 | Date | Version | Maturity | Changes | Author |
 |------|---------|----------|---------|--------|
+| 2026-10-10 | 0.1.1 | ai-drafted | Became a product guide in the new SpaceXAI platform (`product: "Grok Bot"`, vendor `Grok Bot`) with the standard pointer to the Cursor Common Controls hub; replaced the standalone-guide rationale, which no longer holds since SpaceX acquired Cursor's maker on 2026-08-14; brand references updated from xAI to SpaceXAI where they name the company (SpaceX 10-Q cited). No control changed | Claude Code (Opus 5.5) |
 | 2026-10-09 | 0.1.0 | ai-drafted | Initial guide: 20 controls in 7 sections (access and identity, agent reach and connected apps, hosted computer and network, autonomy and approvals, sharing and Team Bots, monitoring and audit, lifecycle and containment), plus an unleveled Known Gaps and Member Guidance section, Compliance Quick Reference, plan availability and references. 17 controls carry Code Pack includes (16 api and 1 terraform, plus 13 Sigma rules); 1.3, 2.2 and 7.3 carry evidenced ClickOps-only verdicts, and 2.1, 4.3, 5.2 and 6.2 enforce through ClickOps with read-only packs. Drafted from vendor documentation fetched 2026-10-08 and corrected after an independent review against pages re-fetched 2026-10-09; no tenant was observed | Claude Code (Opus 5.5) |
 
 ---

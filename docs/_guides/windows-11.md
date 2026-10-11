@@ -1,14 +1,14 @@
 ---
 layout: guide
 title: "Windows 11 Hardening Guide"
-vendor: "Microsoft"
+vendor: "Windows 11"
 slug: "windows-11"
 tier: "3"
 category: "IT Operations"
 description: "Dual-track security and privacy hardening for Windows 11 — enterprise (baselines, Defender, BitLocker, Credential Guard, LAPS, ASR) and consumer (Home/Pro), with an honest, edition-scoped answer to minimizing Microsoft telemetry and connected-experience data collection."
-version: "0.1.0"
+version: "0.1.1"
 maturity: ["ai-drafted"]
-last_updated: "2026-08-15"
+last_updated: "2026-10-10"
 ---
 
 **Product Editions Covered:** Windows 11 Home, Pro, Pro Education/SE, Enterprise, Education (versions 22H2–25H2)
@@ -1247,6 +1247,7 @@ Turn on the audit events that make an endpoint investigable — process creation
 
 | Date | Version | Maturity | Changes | Author |
 |------|---------|----------|---------|--------|
+| 2026-10-10 | 0.1.1 | ai-drafted | Vendor changed from `Microsoft` to `Windows 11`, matching the product-name vendors of the other standalone Microsoft guides (Azure DevOps, Power BI). The home page had shown this guide as a second card titled Microsoft beside the Microsoft platform card. Whether Windows 11 becomes a product guide in that platform is left to a maintainer, together with the other Microsoft-owned standalone guides. No control changed | Claude Code (Opus 5.5) |
 | 2026-08-15 | 0.1.0 | ai-drafted | Initial Windows 11 hardening guide — the repo's first OS guide. 18 controls across identity/credential protection, OS/boot integrity, attack-surface reduction, data protection, privacy/telemetry, network/update hardening, and monitoring, each dual-tracked for consumer (Home/Pro) and enterprise (Pro/Enterprise/Education) with edition-gated automation surfaces. Privacy section gives an honest, edition-scoped answer to "zero Microsoft telemetry": policy-enforced zero diagnostic data on Enterprise/Education, Required floor plus connected-experience restriction on Home/Pro. Every technical string (GPO paths, Policy CSP URIs, cmdlets, registry keys) traced to fetch-verified Microsoft documentation; CIS (Enterprise v5.1.0 / Stand-alone v5.0.0) and DISA STIG (V2R8) versions verified; Tier 3/4 research (Windows Downdate, Recall extraction, bitpixie, CVE-2025-33073, EDR-Freeze) folded into rationale. Authored by Claude Code (Opus 5). | Claude Code (Opus 5) |
 
 ---

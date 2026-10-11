@@ -6,7 +6,7 @@
 #   2. Bare code blocks without language identifiers
 #   3. Malformed table separators (column count mismatch)
 #   4. Tables missing required blank lines (kramdown)
-#   5. Invalid frontmatter categories
+#   5. Invalid frontmatter categories (5b: maturity sets, 5c: platform integrity)
 #   6. Required frontmatter fields
 #   7. Required structural sections
 #   8. Unescaped Liquid syntax ({{ outside code blocks)
@@ -233,6 +233,8 @@ REQUIRED_SECTIONS = ["Overview", "Intended Audience", "How to Use This Guide", "
 
 cat_issues = []
 mat_issues = []
+plat_issues = []
+guides = {}
 fm_issues = []
 struct_issues = []
 
@@ -280,6 +282,8 @@ for fpath in files:
                     if higher and not any(p.endswith("-drafted") for p in members):
                         mat_issues.append(f"{fname}: maturity claims " + ", ".join(higher) + " without a *-drafted status (nothing can be reviewed or validated before it exists)")
 
+    guides[fname[:-3]] = (fm_fields, content)
+
     # Test 6: Required frontmatter fields
     for field in REQUIRED_FIELDS:
         if field not in fm_fields:
@@ -291,6 +295,58 @@ for fpath in files:
         if not re.search(pattern, content, re.MULTILINE):
             struct_issues.append(f"{fname}: missing section '{section}'")
 
+# Test 5c: Platform integrity — the company -> platform -> product chain.
+# The home page groups every guide sharing a platform_slug into one card titled
+# with `platform`, and renders every other guide as its own card titled with
+# `vendor`. Nothing else checks that grouping, so a company could show up twice
+# (2026-10: two standalone "OpenAI" cards, and a standalone "Microsoft" card
+# beside the Microsoft platform card) without a single red. Ownership itself is
+# not lintable — who acquired whom is a research fact, checked by the
+# create-hth-guide and update-hth-guide skills — but its fingerprints are:
+#   - platform, platform_slug and product are set together or not at all
+#   - each platform has exactly one hub (product "Common Controls") and one name
+#   - the hub links every product guide, and every product guide links the hub
+#   - no standalone guide carries a platform's name as its vendor
+#   - no two standalone guides share a vendor (that is a platform not yet made)
+platforms = {}
+for slug, (fm, body) in guides.items():
+    set_keys = [k for k in ("platform", "platform_slug", "product") if fm.get(k)]
+    if set_keys and len(set_keys) != 3:
+        plat_issues.append(f"{slug}.md: sets {', '.join(set_keys)} but platform, platform_slug and product must be set together")
+    if fm.get("platform_slug"):
+        platforms.setdefault(fm["platform_slug"], []).append(slug)
+for pslug, members in sorted(platforms.items()):
+    names = sorted({guides[s][0].get("platform", "") for s in members})
+    if len(names) > 1:
+        plat_issues.append(f"platform '{pslug}': members disagree on the platform name {names}")
+    hubs = [s for s in members if guides[s][0].get("product") == "Common Controls"]
+    if len(hubs) != 1:
+        plat_issues.append(f"platform '{pslug}': expected exactly one hub (product \"Common Controls\"), found {', '.join(hubs) if hubs else 'none'}")
+        continue
+    hub = hubs[0]
+    for s in sorted(members):
+        if s == hub:
+            continue
+        if f"/guides/{hub}/" not in guides[s][1]:
+            plat_issues.append(f"{s}.md: product guide never links its hub /guides/{hub}/")
+        if f"/guides/{s}/" not in guides[hub][1]:
+            plat_issues.append(f"{hub}.md: hub never links its product guide /guides/{s}/")
+platform_names = {}
+for pslug, members in platforms.items():
+    for s in members:
+        platform_names.setdefault(guides[s][0].get("platform", ""), pslug)
+standalone_by_vendor = {}
+for slug, (fm, body) in sorted(guides.items()):
+    if fm.get("platform_slug"):
+        continue
+    vendor = fm.get("vendor", "")
+    if vendor in platform_names:
+        plat_issues.append(f"{slug}.md: standalone guide's vendor '{vendor}' is the name of platform '{platform_names[vendor]}' — join that platform or correct the vendor")
+    standalone_by_vendor.setdefault(vendor, []).append(slug)
+for vendor, slugs in sorted(standalone_by_vendor.items()):
+    if vendor and len(slugs) > 1:
+        plat_issues.append(f"vendor '{vendor}': {len(slugs)} standalone guides ({', '.join(slugs)}) — group them into one platform")
+
 print("===CAT===")
 print(len(cat_issues))
 for issue in cat_issues:
@@ -299,6 +355,11 @@ for issue in cat_issues:
 print("===MAT===")
 print(len(mat_issues))
 for issue in mat_issues:
+    print(f"    {issue}")
+
+print("===PLAT===")
+print(len(plat_issues))
+for issue in plat_issues:
     print(f"    {issue}")
 
 print("===FM===")
@@ -327,13 +388,25 @@ echo ""
 
 # Parse Test 5b results
 echo "▸ Test 5b: Frontmatter maturity is a renderable, self-consistent status set"
-mat_section=$(echo "$meta_results" | sed -n '/===MAT===/,/===FM===/p' | sed '$d' | tail -n +2)
+mat_section=$(echo "$meta_results" | sed -n '/===MAT===/,/===PLAT===/p' | sed '$d' | tail -n +2)
 mat_count=$(echo "$mat_section" | head -1)
 if [ "$mat_count" -gt 0 ]; then
   fail "${mat_count} invalid maturity values found:"
   echo "$mat_section" | tail -n +2
 else
   pass "All maturity sets render ({ai,ni}-{drafted,reviewed,validated}) and rest on a *-drafted claim"
+fi
+echo ""
+
+# Parse Test 5c results
+echo "▸ Test 5c: Platform grouping is consistent (one hub, linked both ways, no duplicate company cards)"
+plat_section=$(echo "$meta_results" | sed -n '/===PLAT===/,/===FM===/p' | sed '$d' | tail -n +2)
+plat_count=$(echo "$plat_section" | head -1)
+if [ "$plat_count" -gt 0 ]; then
+  fail "${plat_count} platform-integrity problems found:"
+  echo "$plat_section" | tail -n +2
+else
+  pass "Every platform has one hub, hub and products link each other, and no company has two cards"
 fi
 echo ""
 

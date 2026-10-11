@@ -1,6 +1,6 @@
 ---
 name: update-hth-guide
-description: Update an existing How to Harden guide with current, verified hardening guidance through a prescriptive research-verify-apply process — currency research against vendor docs/CIS/CISA/expert research, error correction, and new controls — without breaking the cheat sheet or numbering. USE WHEN updating a guide, refreshing guidance, adding a control to an existing guide, fixing an inaccuracy, or running a currency pass. NOT FOR creating new guides (use create-hth-guide) or pack code (use create-code-pack).
+description: Update an existing How to Harden guide with current, verified hardening guidance through a prescriptive research-verify-apply process — currency research against vendor docs/CIS/CISA/expert research, error correction, and new controls — without breaking the cheat sheet or numbering. USE WHEN updating a guide, refreshing guidance, adding a control to an existing guide, fixing an inaccuracy, running a currency pass, or re-homing a guide after its product changed owner (acquisition, merger, rebrand). NOT FOR creating new guides (use create-hth-guide) or pack code (use create-code-pack).
 ---
 
 # Update an HTH Guide
@@ -12,7 +12,8 @@ A step-by-step currency-and-correction process for `docs/_guides/{slug}.md`. Com
 1. Read the guide's frontmatter (`version`, `last_updated`), changelog, and full control list (`### N.N` headings with their claims).
 2. Note every dated or versioned claim the guide makes (token lifetimes, deprecation dates, product names, benchmark versions, plan tiers, cited URLs) — these are the highest-probability rot points.
 3. **Baseline the automation too, not just the prose.** Every step above reads `docs/_guides/{slug}.md`; none opens `packs/{vendor}/`. Run `bash scripts/validate-packs.sh {vendor}` and record its Check 16/17 output: which pack types exist, how many leveled controls have a pack, whether the vendor is a single-type monoculture, whether a documented admin CLI was skipped. A currency pass that never looks at the pack corpus cannot find automation rot — and automation rot is invisible from the guide text, because a guide with a stale surface reads perfectly.
-4. **Checkpoint:** a written list of the guide's controls, its falsifiable claims, **and its current automation coverage numbers**.
+4. **Record the guide's place on the company → platform → product chain:** its `vendor`, its `platform`/`platform_slug`/`product` if set, and what its Overview says about who owns the product. That record is a claim like any other, and it rots the same way: a guide's `vendor` records who owned the product when the guide was written.
+5. **Checkpoint:** a written list of the guide's controls, its falsifiable claims, **its current automation coverage numbers, and its recorded ownership chain**.
 
 ## Phase 2 — Currency research (fetch-gated)
 
@@ -23,6 +24,7 @@ Hunt MATERIAL deltas per source tier (SOURCES.md):
    - the **Terraform provider changelog** — new resources, new **data sources**, and resources newly marked *deprecated* (a resource can be fully documented and unusable: Buildkite's `buildkite_agent_token` is unavailable to any org created after 2024-02-26);
    - the **REST/GraphQL API changelog** — new endpoints and mutations;
    - the vendor's row in [`docs/research/cli-inventory.md`](../../../docs/research/cli-inventory.md) — has a CLI appeared, changed status, or been deprecated since it was last refreshed?
+1c. **Corporate chain.** Re-check who owns the product, from first-party sources ([SOURCES.md](../../../SOURCES.md) Verification Rule 5): acquisitions announced or closed since `last_updated`, mergers, rebrands, divestitures, and the parent's own rebrands. Then repeat [create-hth-guide](../create-hth-guide/SKILL.md) Phase 0 step 3's corpus lookup for the current owner. A changed owner, or a guide sitting outside its owner's existing platform, is a MATERIAL finding of type `OWNERSHIP`. (grok-bot said "xAI (SpaceXAI)" and cursor said "Anysphere" for weeks after SpaceX owned both.)
 2. **Tier 2:** current CIS Benchmark version (numbering shifts between majors — a guide citing v3.1 when v7.0.0 is current is a finding), DISA STIG updates, CISA SCuBA baselines and BODs, KEV entries for the product.
 3. **Tier 3/4:** standing-list vendors and admitted researchers, last ~12 months, product-specific only. Citing a source not yet on the standing list? Add it there with a real fetch-verified example URL (SOURCES.md Maintenance rule) — never a placeholder.
 4. **MATERIAL means** — *what the guide says:* new security control/setting shipped · changed default · deprecated mechanism the guide still recommends · new attack class with a documented mitigation · authoritative baseline unmapped · factual error in the guide.
@@ -45,10 +47,11 @@ Hunt MATERIAL deltas per source tier (SOURCES.md):
    > This step used to open with *"Most SaaS admin settings are ClickOps-only."* Even if true on average, it is a prior an agent can apply **without checking**, and it makes "no pack" the expected answer rather than a finding requiring evidence. Determine this vendor's surface from `create-code-pack` Phase 1's census; do not inherit it from a generalisation.
 6. If a pack automated a now-removed setting, delete the pack file and re-run `bash scripts/sync-packs-to-data.sh` — automation for a nonexistent setting is fabrication.
 7. Update References/Appendix links that rotted (redirect-chasing per SOURCES.md verification rules).
+8. **Re-home on an `OWNERSHIP` finding,** as its own change and never folded silently into a content pass, and only when the request covers it or a maintainer confirms it. Set the platform fields and `vendor` per create-hth-guide Phase 3 step 3, add the product-guide pointer, add the product to the hub's Products table, and remove any prose that justified the old placement. Keep every control number and the pack directory unchanged. If the owner has no platform yet, form one per create-hth-guide Phase 0 step 4. A deal that is only announced changes the Overview's ownership sentence and nothing else.
 
 ## Phase 4 — Bookkeeping and verification
 
-1. Changelog: new top row — date `date +%F`, version bump (minor for new controls, patch for corrections only), a one-line summary naming what changed.
+1. Changelog: new top row — date `date +%F`, version bump (minor for new controls, patch for corrections only; a re-home with no control change is a patch), a one-line summary naming what changed. A re-home also changes the hub, so the hub gets its own patch bump and row, README's category table names the product under its company, and both VERSIONS.md rows are regenerated.
 2. Frontmatter `version` and `last_updated` must equal the new changelog row.
 3. **`maturity` is not yours to add to — and may well need statuses removed.** Maturity is a matrix, not a ladder: three stages (`drafted` → `reviewed` → `validated`) × two agents (`ai` = a machine, `ni` = a person), held as a **list** ([VERSIONS.md](../../../VERSIONS.md#maturity-statuses--the-matrix)). Only a [`validate-hth-guide`](../validate-hth-guide/SKILL.md) run may add `ai-validated`, and only maintainers may add any `ni-*`. A currency pass reads documents; it does not touch a tenant and it is not a human practitioner's judgement, so it can never earn a status. It can however **invalidate** one: if you corrected a guide holding `ai-validated` — a moved console path, a removed setting, a changed default — that status is now a claim about a world that has moved. Remove it from the set (usually leaving `["ai-drafted"]`), delete the per-surface `{% include status-mark.html %}` marks on every implementation heading you changed, and say so in the changelog row, whose Maturity column carries the full set as of that row so the narrowing is visible. A stale status is worse than none: it is the site telling a reader that something was checked when what was checked is gone.
 4. Escape any literal `{{...}}` introduced (Vault templates etc.) with `{% raw %}...{% endraw %}`.
@@ -61,4 +64,5 @@ Hunt MATERIAL deltas per source tier (SOURCES.md):
 - When two research sources disagree on a date/status, re-fetch the primary; if still ambiguous, state the claim cautiously without asserting the disputed specifics.
 - Version bumps and changelog rows move together — the linter checks structure, not consistency; consistency is on you.
 - Correcting a validated guide silently downgrades its truth without downgrading its badge. The frontmatter set still contains `ai-validated` and the control still wears the mark, because nothing in the lint compares a badge to the text beside it — that check is this step, done by you.
+- Re-homing a guide does not touch its `maturity`. Ownership is not a control: an `ai-validated` guide that moves platform keeps the status, because nothing it was validated against has changed.
 - On Windows, repo scripts run through Git Bash (`bash scripts/...`).
