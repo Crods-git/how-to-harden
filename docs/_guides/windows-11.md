@@ -3,6 +3,9 @@ layout: guide
 title: "Windows 11 Hardening Guide"
 vendor: "Windows 11"
 slug: "windows-11"
+platform: "Microsoft"
+platform_slug: "microsoft-365"
+product: "Windows 11"
 tier: "3"
 category: "IT Operations"
 description: "Dual-track security and privacy hardening for Windows 11 — enterprise (baselines, Defender, BitLocker, Credential Guard, LAPS, ASR) and consumer (Home/Pro), with an honest, edition-scoped answer to minimizing Microsoft telemetry and connected-experience data collection."
@@ -16,6 +19,8 @@ last_updated: "2026-10-10"
 ---
 
 ## Overview
+
+This is a **product guide within the [Microsoft platform](/guides/microsoft-365/)**. Its enterprise track manages Windows 11 through the same Microsoft tenant as the rest of the platform: tenant-wide identity controls live in the Microsoft **Common Controls** hub, the [Microsoft 365 guide](/guides/microsoft-365/), Conditional Access lives in the [Microsoft Entra ID guide](/guides/microsoft-entra-id/), Intune administration lives in the [Microsoft Intune guide](/guides/microsoft-intune/), and none of it is repeated here. The consumer track (Home and Pro without a tenant) stands alone.
 
 Windows 11 is two hardening problems in one box. For the **enterprise**, it is a managed endpoint governed by Group Policy, Intune, and the Microsoft security baselines, with a deep built-in defense stack — Defender Antivirus, Attack Surface Reduction, Credential Guard, BitLocker, Windows LAPS. For the **individual**, it is a consumer OS that ships permissive-by-default, wired into Microsoft accounts, connected experiences, advertising identifiers, and — on Copilot+ PCs — Recall.
 
@@ -1247,7 +1252,7 @@ Turn on the audit events that make an endpoint investigable — process creation
 
 | Date | Version | Maturity | Changes | Author |
 |------|---------|----------|---------|--------|
-| 2026-10-10 | 0.1.1 | ai-drafted | Vendor changed from `Microsoft` to `Windows 11`, matching the product-name vendors of the other standalone Microsoft guides (Azure DevOps, Power BI). The home page had shown this guide as a second card titled Microsoft beside the Microsoft platform card. Whether Windows 11 becomes a product guide in that platform is left to a maintainer, together with the other Microsoft-owned standalone guides. No control changed | Claude Code (Opus 5.5) |
+| 2026-10-10 | 0.1.1 | ai-drafted | Became a product guide in the Microsoft platform (`platform: "Microsoft"`, `platform_slug: "microsoft-365"`, `product: "Windows 11"`, vendor `Windows 11`) with the product-guide pointer to the hub; the home page had shown it as a second card titled Microsoft beside the Microsoft platform card. Moved the §5.2 pack from `config/` to `sdk/`, where every other Windows 11 PowerShell pack lives: `config/` does not take `.ps1`. No control changed | Claude Code (Opus 5.5) |
 | 2026-08-15 | 0.1.0 | ai-drafted | Initial Windows 11 hardening guide — the repo's first OS guide. 18 controls across identity/credential protection, OS/boot integrity, attack-surface reduction, data protection, privacy/telemetry, network/update hardening, and monitoring, each dual-tracked for consumer (Home/Pro) and enterprise (Pro/Enterprise/Education) with edition-gated automation surfaces. Privacy section gives an honest, edition-scoped answer to "zero Microsoft telemetry": policy-enforced zero diagnostic data on Enterprise/Education, Required floor plus connected-experience restriction on Home/Pro. Every technical string (GPO paths, Policy CSP URIs, cmdlets, registry keys) traced to fetch-verified Microsoft documentation; CIS (Enterprise v5.1.0 / Stand-alone v5.0.0) and DISA STIG (V2R8) versions verified; Tier 3/4 research (Windows Downdate, Recall extraction, bitpixie, CVE-2025-33073, EDR-Freeze) folded into rationale. Authored by Claude Code (Opus 5). | Claude Code (Opus 5) |
 
 ---

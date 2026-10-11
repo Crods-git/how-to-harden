@@ -201,7 +201,7 @@ python3 -c "import yaml" 2>/dev/null || die_cannot_run "python3 module 'yaml' no
 
 # ─── Checks 1-5, 8, 10, 11, 13, 14: Python corpus sweep ─────────────────────
 # One pass over ~1,100 files; bash loops at this scale are unusably slow.
-results=$(PACKS_DIR="${PACKS_DIR}" DATA_DIR="${DATA_DIR}" GUIDES_DIR="${GUIDES_DIR}" python3 << 'PYEOF'
+results=$(PACKS_DIR="${PACKS_DIR}" DATA_DIR="${DATA_DIR}" GUIDES_DIR="${GUIDES_DIR}" INVENTORY="${REPO_ROOT}/docs/research/cli-inventory.md" python3 << 'PYEOF'
 import os, re, glob, json, sys
 from collections import defaultdict
 
@@ -225,6 +225,25 @@ TYPE_EXT = {
     "sigma":     {".yml"},
     "config":    {".jsonc", ".yml", ".sh"},
 }
+# A cli-inventory row reading PowerShell-Only makes the vendor's PowerShell
+# modules its first-party CLI, and AGENTS.md then EXPECTS a cli/ pack — which
+# the table above could never accept, so 24 Microsoft 365 / Entra ID / Intune
+# cli/*.ps1 packs read as type violations while doing exactly what the
+# inventory rule asks. For those vendors only, cli/ also takes .ps1; every
+# other vendor keeps .sh/.yml (az, gh and the rest are not PowerShell CLIs).
+# Exact slug match only: a fuzzy prefix match would let "microsoft-*" vendors
+# borrow a PowerShell-Only row that is not theirs.
+POWERSHELL_CLI = set()
+_inventory = os.environ.get("INVENTORY", "")
+if _inventory and os.path.isfile(_inventory):
+    _row_re = re.compile(r'^\|\s*\d+\s*\|([^|]*)\|([^|]*)\|')
+    for _line in open(_inventory, encoding="utf-8"):
+        _m = _row_re.match(_line)
+        if _m and _m.group(2).strip().lower().startswith("powershell-only"):
+            _name = _m.group(1).strip().lower()
+            for _ch in "().'":
+                _name = _name.replace(_ch, "")
+            POWERSHELL_CLI.add(re.sub(r"[^a-z0-9]+", "-", _name).strip("-"))
 MUTATION_RE = re.compile(r"-X\s*(POST|PUT|PATCH|DELETE)\b")
 
 # Check 14 must also see a verb that a pack reaches through a helper. common.sh is
@@ -392,6 +411,8 @@ for path in all_files:
 
     # ── Check 8: extension <-> type ──
     allowed = TYPE_EXT.get(ptype, set())
+    if ptype == "cli" and vendor in POWERSHELL_CLI:
+        allowed = allowed | {".ps1"}
     if allowed and ext not in allowed:
         ext_bad.append(f"{rel}: '{ext}' not allowed in {ptype}/ (allowed: {', '.join(sorted(allowed))})")
 

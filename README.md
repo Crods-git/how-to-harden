@@ -41,7 +41,7 @@ Like CIS Benchmarks, but free, vendor-neutral, and focused on integration contro
 | HR/Finance | 11 | BambooHR, ADP, Workday, Stripe |
 | AI/ML Platform | 11 | Anthropic (Claude Enterprise, Claude Code, API), OpenAI (ChatGPT Enterprise, ChatGPT Dots, Ona), SpaceXAI (Grok Bot), LangChain |
 | Marketing | 9 | HubSpot, Braze, SendGrid, Twilio |
-| IT Operations | 6 | ServiceNow, Jamf, PagerDuty, Windows 11 |
+| IT Operations | 6 | ServiceNow, Jamf, PagerDuty, Microsoft (Intune, Windows 11) |
 | IaC | 2 | Terraform Cloud, Pulumi |
 
 Every control includes:
